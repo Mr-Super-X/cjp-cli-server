@@ -15,7 +15,6 @@ module.exports = () => {
         socket.emit(
           id,
           helper.parseMsg('connect', {
-            type: 'connect',
             message: '云构建服务连接成功',
           })
         );
