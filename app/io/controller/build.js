@@ -62,14 +62,14 @@ async function prepare(cloudBuildTask, socket, helper) {
 async function download(cloudBuildTask, socket, helper) {
   socket.emit('build', helper.parseMsg('download repository', {
     type: 'download repository',
-    message: '开始下载远程仓库源码',
+    message: '开始云下载git仓库源码',
   }));
   // 获取下载结果，如果失败发出事件告诉客户端
   const downloadRes = await cloudBuildTask.download();
   if (!downloadRes || downloadRes.code === FAILED) {
     socket.emit('build', helper.parseMsg('download failed', {
       type: 'download failed',
-      message: '远程仓库源码下载失败！',
+      message: 'git仓库源码云下载失败！',
     }));
     return;
   }
@@ -77,9 +77,54 @@ async function download(cloudBuildTask, socket, helper) {
   // 成功也需要提示客户端
   socket.emit('build', helper.parseMsg('download success', {
     type: 'download success',
-    message: '远程仓库源码下载成功',
+    message: 'git仓库源码云下载成功',
   }));
 }
+
+async function install(cloudBuildTask, socket, helper) {
+  socket.emit('build', helper.parseMsg('install', {
+    type: 'install',
+    message: '开始云安装项目依赖',
+  }));
+  // 获取下载结果，如果失败发出事件告诉客户端
+  const installRes = await cloudBuildTask.install();
+  if (!installRes || installRes.code === FAILED) {
+    socket.emit('build', helper.parseMsg('install failed', {
+      type: 'install failed',
+      message: '项目依赖云安装失败！',
+    }));
+    return;
+  }
+
+  // 成功也需要提示客户端
+  socket.emit('build', helper.parseMsg('install success', {
+    type: 'install success',
+    message: '项目依赖云安装成功',
+  }));
+}
+
+async function build(cloudBuildTask, socket, helper) {
+  socket.emit('build', helper.parseMsg('build', {
+    type: 'install',
+    message: '开始启动云构建任务',
+  }));
+  // 获取下载结果，如果失败发出事件告诉客户端
+  const installRes = await cloudBuildTask.build();
+  if (!installRes || installRes.code === FAILED) {
+    socket.emit('build', helper.parseMsg('build failed', {
+      type: 'build failed',
+      message: '云构建任务执行失败！',
+    }));
+    return;
+  }
+
+  // 成功也需要提示客户端
+  socket.emit('build', helper.parseMsg('build success', {
+    type: 'build success',
+    message: '云构建任务执行成功',
+  }));
+}
+
 
 module.exports = app => {
   class Controller extends app.Controller {
@@ -90,6 +135,8 @@ module.exports = app => {
       try {
         await prepare(cloudBuildTask, socket, helper);
         await download(cloudBuildTask, socket, helper);
+        await install(cloudBuildTask, socket, helper);
+        await build(cloudBuildTask, socket, helper);
       } catch (error) {
         socket.emit(
           'build',
