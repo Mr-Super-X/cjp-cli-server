@@ -150,8 +150,7 @@ module.exports = app => {
       } catch (error) {
         socket.emit(
           'build',
-          helper.parseMsg('error', {
-            type: 'error',
+          helper.parseMsg('build failed', {
             message: '云构建任务失败，失败原因：' + error.message,
           })
         );
