@@ -9,7 +9,9 @@
   "dependencies": {
     "@pick-star/cli-mongodb": "^1.0.3",
     "egg": "^3.17.5",
-    "egg-scripts": "2"
+    "egg-redis": "^2.6.0",
+    "egg-scripts": "2",
+    "egg-socket.io": "^4.1.6"
   },
   "devDependencies": {
     "egg-bin": "6",
@@ -18,7 +20,7 @@
     "eslint-config-egg": "13"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=16.0.0"
   },
   "scripts": {
     "start": "egg-scripts start --daemon --title=egg-server-cjp-cli-server",
