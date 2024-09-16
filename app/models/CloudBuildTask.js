@@ -33,6 +33,7 @@ class CloudBuildTask {
     this._version = version; // 项目版本号
     this._branch = branch; // 开发分支
     this._buildCmd = buildCmd; // 构建命令
+    this._buildPath = null; // 构建结果路径
     // 定义缓存目录
     this._dir = path.resolve(
       os.homedir(),
@@ -98,6 +99,36 @@ class CloudBuildTask {
     }
 
     return res ? this.success('云构建成功') : this.failed('云构建失败');
+  }
+
+  async prePublish() {
+    // 1. 获取构建结果
+    const buildPath = this.findBuildPath();
+    // 2. 检查构建结果
+    if (!buildPath) {
+      return this.failed('未找到构建结果输出路径，请检查');
+    }
+
+    this._buildPath = buildPath;
+    return this.success(`已找到构建结果输出路径${buildPath}`);
+  }
+
+  async publish() {}
+
+  findBuildPath() {
+    // 去当前源码目录下找'dist', 'build'进行合并
+    const buildDir = [ 'dist', 'build' ];
+    const buildPath = buildDir.find(dir =>
+      fs.existsSync(path.resolve(this._sourceCodeDir, dir))
+    );
+
+    this._logger.info('buildPath', buildPath);
+
+    if (buildPath) {
+      return path.resolve(this._sourceCodeDir, buildPath);
+    }
+
+    return null;
   }
 
   execCommand(command) {

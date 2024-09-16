@@ -84,6 +84,32 @@ async function build(cloudBuildTask, socket, helper) {
   );
 }
 
+async function prePublish(cloudBuildTask, socket, helper) {
+  await execBuildTask(
+    cloudBuildTask,
+    socket,
+    helper,
+    'prePublish',
+    { action: 'pre-publish', message: '开始启动云发布预检查' },
+    { action: 'pre-publish failed', message: '云发布预检查执行失败！' },
+    { action: 'pre-publish success', message: '云发布预检查通过' }
+  );
+}
+
+
+async function publish(cloudBuildTask, socket, helper) {
+  await execBuildTask(
+    cloudBuildTask,
+    socket,
+    helper,
+    'publish',
+    { action: 'publish', message: '开始启动云发布任务' },
+    { action: 'publish failed', message: '云发布任务执行失败！' },
+    { action: 'publish success', message: '云发布任务执行成功' }
+  );
+}
+
+
 // 定义参数公共结构
 const helperAction = {
   action: '',
@@ -121,10 +147,10 @@ async function execBuildTask(
     socket.emit(
       'build',
       helper.parseMsg(failed.action, {
-        message: failed.message,
+        message: `${failed.message} 失败原因：${result.message}`,
       })
     );
-    return;
+    throw new Error('任务终止');
   }
 
   // 成功也需要提示客户端
@@ -147,6 +173,8 @@ module.exports = app => {
         await download(cloudBuildTask, socket, helper);
         await install(cloudBuildTask, socket, helper);
         await build(cloudBuildTask, socket, helper);
+        await prePublish(cloudBuildTask, socket, helper);
+        await publish(cloudBuildTask, socket, helper);
       } catch (error) {
         socket.emit(
           'build',
