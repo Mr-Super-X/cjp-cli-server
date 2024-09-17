@@ -1,42 +1,8 @@
 'use strict';
 
 // 自建库
-const helper = require('../../extend/helper');
-const CloudBuildTask = require('../../models/CloudBuildTask');
+const { createCloudBuildTask } = require('../../models/CloudBuildTask');
 const { FAILED } = require('../../const');
-
-const REDIS_PREFIX = 'cloudbuild';
-
-async function createCloudBuildTask(ctx, app) {
-  const { socket } = ctx;
-  const client = socket.id;
-  // 获取redis任务
-  const redisKey = `${REDIS_PREFIX}:${client}`;
-  const redisTask = await app.redis.get(redisKey);
-  const task = JSON.parse(redisTask);
-  // 向客户端发送build事件
-  socket.emit(
-    'build',
-    helper.parseMsg('create task', {
-      message: '创建云构建任务成功',
-    })
-  );
-  // 返回云构建任务实例
-  const { repo, name, version, branch, buildCmd, prod } = task;
-
-  return new CloudBuildTask(
-    {
-      repo,
-      name,
-      version,
-      branch,
-      buildCmd,
-      prod,
-    },
-    ctx,
-    app
-  );
-}
 
 async function prepare(cloudBuildTask, socket, helper) {
   await execBuildTask(
@@ -177,6 +143,14 @@ module.exports = app => {
         await build(cloudBuildTask, socket, helper);
         await prePublish(cloudBuildTask, socket, helper);
         await publish(cloudBuildTask, socket, helper);
+        // TODO 生成访问链接，暂未备案成功
+        const type = cloudBuildTask.isProd() ? 'cjp-cli' : 'cjp-cli-dev';
+        const link = `https://${type}.cjpclidev.top/${cloudBuildTask._name}`;
+        // 主动告诉客户端，然后关闭连接
+        socket.emit('build', helper.parseMsg('build success', {
+          message: `云构建任务执行成功，访问链接：${link}`,
+        }));
+        socket.disconnect();
       } catch (error) {
         socket.emit(
           'build',

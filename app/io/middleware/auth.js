@@ -1,5 +1,6 @@
 'use strict';
 
+const { createCloudBuildTask } = require('../../models/CloudBuildTask');
 const REDIS_PREFIX = 'cloudbuild';
 
 module.exports = () => {
@@ -29,10 +30,16 @@ module.exports = () => {
       hasRedisTask = await redis.get(`${REDIS_PREFIX}:${id}`);
       logger.info('redisTask: ', hasRedisTask);
       await next();
+      // 清除缓存文件
+      const cloudBuildTask = await createCloudBuildTask(ctx, app);
+      await cloudBuildTask.clean();
       // 断开连接的内容在next后面
       console.log('disconnect!');
     } catch (error) {
       logger.error('build error', error.message);
+      // 清除缓存文件
+      const cloudBuildTask = await createCloudBuildTask(ctx, app);
+      await cloudBuildTask.clean();
     }
   };
 };

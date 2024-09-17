@@ -12,11 +12,14 @@ const path = require('path');
 // 自建库
 const OSS = require('./OSS');
 const config = require('../../config/db');
+const helper = require('../extend/helper');
 const { SUCCESS, FAILED } = require('../const');
 
 const DEFAULT_CLI_HOME = '.cjp-cli-dev'; // 默认缓存路径
 const CLOUD_BUILD_DIR = 'cloudbuild'; // 默认缓存路径
 const TAOBAO_REGISTRY = 'https://registry.npmmirror.com/'; // 淘宝源
+
+const REDIS_PREFIX = 'cloudbuild';
 
 // 白名单命令，不在此白名单中的命令都需要确认是否执行，防止用户插入风险操作，如：rm -rf等
 const COMMAND_WHITELIST = [
@@ -28,7 +31,7 @@ const COMMAND_WHITELIST = [
 ];
 
 class CloudBuildTask {
-  constructor(options, ctx) {
+  constructor(options, ctx, app) {
     const { name, version, repo, branch, buildCmd, prod } = options;
 
     this._repo = repo; // 仓库地址
@@ -50,6 +53,8 @@ class CloudBuildTask {
     this._oss = null; // OSS上传对象
     this._prod = prod === 'true'; // 这个prod传到服务端会被转成string，这里要再处理一次
 
+    this._ctx = ctx;
+    this._app = app;
     const { logger, socket } = ctx;
     this._socket = socket;
     this._logger = logger;
@@ -145,10 +150,7 @@ class CloudBuildTask {
         const filePath = path.resolve(this._buildPath, file);
         try {
           // 构建代码上传oss
-          await this._oss.put(
-            `${this._name}/${file}`,
-            filePath
-          );
+          await this._oss.put(`${this._name}/${file}`, filePath);
 
           res = true;
         } catch (err) {
@@ -233,6 +235,28 @@ class CloudBuildTask {
       data,
     };
   }
+
+  // 清除缓存文件
+  async clean() {
+    if (fs.existsSync(this._dir)) {
+      fse.removeSync(this._dir);
+    }
+
+    // 获取redis任务
+    const { socket } = this._ctx;
+    const client = socket.id;
+    const redisKey = `${REDIS_PREFIX}:${client}`;
+
+    this._logger.info('开始删除redis缓存：' + await this._app.redis.get(redisKey));
+    // 删除redis缓存
+    await this._app.redis.del(redisKey);
+    this._logger.info('redis缓存删除成功：' + await this._app.redis.get(redisKey));
+  }
+
+  // 判断是否生产环境
+  isProd() {
+    return this._prod;
+  }
 }
 
 function exec(command, args, options) {
@@ -256,4 +280,39 @@ function checkCommand(command) {
   return false;
 }
 
-module.exports = CloudBuildTask;
+// 导出创建云构建任务方法
+async function createCloudBuildTask(ctx, app) {
+  const { socket } = ctx;
+  const client = socket.id;
+  // 获取redis任务
+  const redisKey = `${REDIS_PREFIX}:${client}`;
+  const redisTask = await app.redis.get(redisKey);
+  const task = JSON.parse(redisTask);
+  // 向客户端发送build事件
+  socket.emit(
+    'build',
+    helper.parseMsg('create task', {
+      message: '创建云构建任务成功',
+    })
+  );
+  // 返回云构建任务实例
+  const { repo, name, version, branch, buildCmd, prod } = task;
+
+  return new CloudBuildTask(
+    {
+      repo,
+      name,
+      version,
+      branch,
+      buildCmd,
+      prod,
+    },
+    ctx,
+    app
+  );
+}
+
+module.exports = {
+  CloudBuildTask,
+  createCloudBuildTask,
+};
