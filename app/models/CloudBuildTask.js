@@ -9,6 +9,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 // 自建库
+const OSS = require('./OSS');
+const config = require('../../config/db');
 const { SUCCESS, FAILED } = require('../const');
 
 const DEFAULT_CLI_HOME = '.cjp-cli-dev'; // 默认缓存路径
@@ -26,7 +28,7 @@ const COMMAND_WHITELIST = [
 
 class CloudBuildTask {
   constructor(options, ctx) {
-    const { name, version, repo, branch, buildCmd } = options;
+    const { name, version, repo, branch, buildCmd, prod } = options;
 
     this._repo = repo; // 仓库地址
     this._name = name; // 项目名称
@@ -43,12 +45,17 @@ class CloudBuildTask {
     );
     // 定义缓存源码目录
     this._sourceCodeDir = path.resolve(this._dir, this._name);
+    this._git = null; // git实例
+    this._oss = null; // OSS上传对象
+    this._prod = prod === 'true'; // 这个prod传到服务端会被转成string，这里要再处理一次
 
     const { logger, socket } = ctx;
     this._socket = socket;
     this._logger = logger;
     this._logger.info('_dir', this._dir);
     this._logger.info('_sourceCodeDir', this._sourceCodeDir);
+    this._logger.info('_buildCmd', this._buildCmd);
+    this._logger.info('_prod', this._prod);
   }
 
   async prepare() {
@@ -58,6 +65,14 @@ class CloudBuildTask {
     fse.emptyDirSync(this._dir);
     // 实例化git并缓存到this中
     this._git = new Git(this._dir);
+
+    if (this._prod) {
+      this._oss = new OSS(config.OSS_PROD_BUCKET);
+    } else {
+      this._oss = new OSS(config.OSS_DEV_BUCKET);
+    }
+
+    console.log(this._oss);
 
     // 返回成功数据结构
     return this.success('云构建准备阶段执行成功');
