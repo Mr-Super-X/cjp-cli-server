@@ -23,6 +23,7 @@ async function createCloudBuildTask(ctx, app) {
   );
   // 返回云构建任务实例
   const { repo, name, version, branch, buildCmd, prod } = task;
+
   return new CloudBuildTask(
     {
       repo,

@@ -13,6 +13,10 @@ class OSS {
       bucket,
     });
   }
+
+  async put(object, localPath, options = {}) {
+    await this._oss.put(object, localPath, options);
+  }
 }
 
 module.exports = OSS;

@@ -3,6 +3,7 @@
 // 第三方库
 const fse = require('fs-extra'); // 用于文件操作
 const Git = require('simple-git'); // 用于git操作
+const { glob } = require('glob'); // 用于shell模式匹配文件
 // 内置库
 const cp = require('child_process');
 const fs = require('fs');
@@ -72,8 +73,6 @@ class CloudBuildTask {
       this._oss = new OSS(config.OSS_DEV_BUCKET);
     }
 
-    console.log(this._oss);
-
     // 返回成功数据结构
     return this.success('云构建准备阶段执行成功');
   }
@@ -128,7 +127,41 @@ class CloudBuildTask {
     return this.success(`已找到构建结果输出路径${buildPath}`);
   }
 
-  async publish() {}
+  async publish() {
+    let res = true;
+    const files = await glob('**', {
+      cwd: this._buildPath,
+      nodir: true, // 排除空文件夹
+      ignore: '**/node_modules/**', // 忽略所有的node_modules
+    });
+
+    if (!files || files.length === 0) {
+      this._logger.error(this._buildPath + '中没有匹配到任何文件');
+      return;
+    }
+
+    await Promise.all(
+      files.map(async file => {
+        const filePath = path.resolve(this._buildPath, file);
+        try {
+          // 构建代码上传oss
+          await this._oss.put(
+            `${this._name}/${file}`,
+            filePath
+          );
+
+          res = true;
+        } catch (err) {
+          res = false;
+          this._logger.error(`阿里云OSS上传 ${filePath} 出错: ${err.message}`);
+        }
+      })
+    ).catch(() => {
+      res = false;
+    });
+
+    return res ? this.success('云发布成功') : this.failed('云发布失败');
+  }
 
   findBuildPath() {
     // 去当前源码目录下找'dist', 'build'进行合并
