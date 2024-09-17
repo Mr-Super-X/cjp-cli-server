@@ -15,7 +15,17 @@ class OSS {
   }
 
   async put(object, localPath, options = {}) {
-    await this._oss.put(object, localPath, options);
+    return await this._oss.put(object, localPath, options);
+  }
+
+  async list(prefix) {
+    const ossFiles = await this._oss.list({
+      prefix,
+    });
+    if (ossFiles && ossFiles.objects) {
+      return ossFiles.objects;
+    }
+    return [];
   }
 }
 
