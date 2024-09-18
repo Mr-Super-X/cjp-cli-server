@@ -40,6 +40,37 @@ class ProjectController extends Controller {
     }
   }
 
+  // 获取OSS文件
+  async getOSSFile() {
+    const { ctx } = this;
+    const dir = ctx.query.name;
+    const file = ctx.query.file;
+    let ossProjectType = ctx.query.type;
+    if (!dir || !file) {
+      ctx.body = failed('请提供OSS文件名称');
+      return;
+    }
+    if (!ossProjectType) {
+      ossProjectType = 'prod';
+    }
+
+    let oss;
+    if (ossProjectType === 'prod') {
+      oss = new OSS(config.OSS_PROD_BUCKET);
+    } else {
+      oss = new OSS(config.OSS_DEV_BUCKET);
+    }
+
+    if (oss) {
+      const fileList = await oss.list(dir);
+      const fileName = `${dir}/${file}`;
+      const finalFile = fileList.find(item => item.name === fileName);
+      ctx.body = success('获取项目文件成功', finalFile);
+    } else {
+      ctx.body = failed('获取项目文件失败');
+    }
+  }
+
   // 获取redis数据
   async getRedis() {
     const { ctx, app } = this;
