@@ -137,11 +137,17 @@ module.exports = app => {
       const { socket, helper } = ctx;
       const cloudBuildTask = await createCloudBuildTask(ctx, app);
       try {
+        // 云构建准备
         await prepare(cloudBuildTask, socket, helper);
+        // 克隆仓库&下载模板
         await download(cloudBuildTask, socket, helper);
+        // 安装依赖
         await install(cloudBuildTask, socket, helper);
+        // 云构建
         await build(cloudBuildTask, socket, helper);
+        // 准备云发布
         await prePublish(cloudBuildTask, socket, helper);
+        // 云发布
         await publish(cloudBuildTask, socket, helper);
         // TODO 生成访问链接，暂未备案成功
         const type = cloudBuildTask.isProd() ? 'cjp-cli' : 'cjp-cli-dev';
