@@ -9,6 +9,7 @@
   "dependencies": {
     "@pick-star/cli-mongodb": "^1.0.3",
     "ali-oss": "^6.21.0",
+    "cross-spawn": "^7.0.3",
     "egg": "^3.17.5",
     "egg-redis": "^2.6.0",
     "egg-scripts": "2",

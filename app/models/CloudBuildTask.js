@@ -3,9 +3,9 @@
 // 第三方库
 const fse = require('fs-extra'); // 用于文件操作
 const Git = require('simple-git'); // 用于git操作
+const cSpawn = require('cross-spawn'); // 用来解决node内置的spawn在windows上运行路径解析错误问题
 const { glob } = require('glob'); // 用于shell模式匹配文件
 // 内置库
-const cp = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -251,11 +251,7 @@ class CloudBuildTask {
 }
 
 function exec(command, args, options) {
-  const win32 = process.platform === 'win32';
-
-  const cmd = win32 ? 'cmd' : command;
-  const cmdArgs = win32 ? [ '/c' ].concat(command, args) : args;
-  return cp.spawn(cmd, cmdArgs, options || {});
+  return cSpawn(command, args, options || {});
 }
 
 function checkCommand(command) {
