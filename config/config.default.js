@@ -45,6 +45,12 @@ module.exports = appInfo => {
     },
   };
 
+  config.security = {
+    csrf: {
+      enable: false, // 关闭csrf
+    },
+  };
+
   // add your user config here
   const userConfig = {
     // myAppName: 'egg',

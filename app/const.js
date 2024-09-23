@@ -12,8 +12,15 @@ const COMMAND_WHITELIST = [
   'node', // Node.js运行环境
 ];
 
+// 组件状态
+const STATUS = {
+  ON: 1,
+  OFF: 0,
+};
+
 module.exports = {
   SUCCESS,
   FAILED,
   COMMAND_WHITELIST,
+  STATUS,
 };
