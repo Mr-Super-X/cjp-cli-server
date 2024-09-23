@@ -115,7 +115,11 @@ class ComponentsController extends Controller {
         return;
       }
     }
-    ctx.body = success('添加组件到数据库成功', componentData);
+    // 将数据库中的数据查出来返回给前端
+    ctx.body = success('添加组件到数据库成功', {
+      component: await componentService.queryOne({ id: componentId }),
+      version: await versionService.queryOne({ component_id: componentId, version }),
+    });
   }
 }
 
