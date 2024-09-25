@@ -11,6 +11,7 @@
     "ali-oss": "^6.21.0",
     "cross-spawn": "^7.0.3",
     "egg": "^3.17.5",
+    "egg-mysql": "^4.0.0",
     "egg-redis": "^2.6.0",
     "egg-scripts": "2",
     "egg-socket.io": "^4.1.6",
