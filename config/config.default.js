@@ -51,25 +51,25 @@ module.exports = appInfo => {
     },
   };
 
-  config.mysql = {
-    // 单数据库信息配置
-    client: {
-      // host
-      host: '172.16.32.33',
-      // 端口号
-      port: '33060',
-      // 用户名
-      user: 'dgd-uadp',
-      // 密码
-      password: 'dgd-uadp@2020',
-      // 数据库名
-      database: 'cjp-cli-dev',
-    },
-    // 是否加载到 app 上，默认开启
-    app: true,
-    // 是否加载到 agent 上，默认关闭
-    agent: false,
-  };
+  // config.mysql = {
+  //   // 单数据库信息配置
+  //   client: {
+  //     // host
+  //     host: '172.16.32.33',
+  //     // 端口号
+  //     port: '33060',
+  //     // 用户名
+  //     user: 'dgd-uadp',
+  //     // 密码
+  //     password: 'dgd-uadp@2020',
+  //     // 数据库名
+  //     database: 'cjp-cli-dev',
+  //   },
+  //   // 是否加载到 app 上，默认开启
+  //   app: true,
+  //   // 是否加载到 agent 上，默认关闭
+  //   agent: false,
+  // };
 
   // add your user config here
   const userConfig = {

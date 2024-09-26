@@ -8,8 +8,12 @@ class ProjectController extends Controller {
   // 获取项目/组件代码模板
   async getTemplate() {
     const { ctx } = this;
-    const data = await mongo().query('project');
-    ctx.body = data;
+    try {
+      const data = await mongo().query('project');
+      ctx.body = success('获取项目/组件代码模板成功', data);
+    } catch (error) {
+      ctx.body = failed(`获取项目/组件代码模板失败：${error}`, null);
+    }
   }
 
   // 获取oss项目数据
