@@ -23,7 +23,7 @@ const REDIS_PREFIX = 'cloudbuild';
 
 class CloudBuildTask {
   constructor(options, ctx, app) {
-    const { name, version, repo, branch, buildCmd, prod } = options;
+    const { name, version, repo, branch, buildCmd, prod, registry } = options;
 
     this._repo = repo; // 仓库地址
     this._name = name; // 项目名称
@@ -43,6 +43,7 @@ class CloudBuildTask {
     this._git = null; // git实例
     this._oss = null; // OSS上传对象
     this._prod = prod === 'true'; // 这个prod传到服务端会被转成string，这里要再处理一次
+    this._registry = registry || TAOBAO_REGISTRY; // 使用用户指定的npm源或者淘宝镜像
 
     this._ctx = ctx;
     this._app = app;
@@ -91,7 +92,7 @@ class CloudBuildTask {
   async install() {
     // 安装依赖
     const res = await this.execCommand(
-      `npm install --registry=${TAOBAO_REGISTRY}`
+      `npm install --registry=${this._registry}`
     );
 
     return res
