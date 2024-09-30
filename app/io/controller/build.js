@@ -154,7 +154,7 @@ module.exports = app => {
         const link = `https://${type}.cjpclidev.top/${cloudBuildTask._name}`;
         // 主动告诉客户端，然后关闭连接
         socket.emit('build', helper.parseMsg('build success', {
-          message: `云构建发布成功，访问链接：${link}`,
+          message: `项目发布成功，访问链接：${link}`,
         }));
         socket.disconnect();
       } catch (error) {
