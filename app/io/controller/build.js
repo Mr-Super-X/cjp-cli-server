@@ -149,7 +149,7 @@ module.exports = app => {
         await prePublish(cloudBuildTask, socket, helper);
         // 云发布
         await publish(cloudBuildTask, socket, helper);
-        // TODO 生成访问链接，暂未备案成功
+        // TODO 生成访问链接，暂未备案成功，成功后还需去阿里云配置cname映射
         const type = cloudBuildTask.isProd() ? 'cjp-cli' : 'cjp-cli-dev';
         const link = `https://${type}.cjpclidev.top/${cloudBuildTask._name}`;
         // 主动告诉客户端，然后关闭连接

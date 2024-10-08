@@ -18,9 +18,9 @@ const OSS_DEV_BUCKET = 'cjp-cli-dev';
 const OSS_REGION = 'oss-cn-guangzhou';
 
 /* MySQL配置信息 */
-const MYSQL_HOST = 'localhost';
+const MYSQL_HOST = 'cjpclidev.top';
 const MYSQL_PORT = 3306;
-const MYSQL_USER = 'cjp';
+const MYSQL_USER = 'root';
 // 将重要数据存在本地缓存文件中，保障安全性
 const MYSQL_PWD = fs.readFileSync(path.resolve(os.homedir(), '.cjp-cli-dev', 'mysql_password')).toString();
 const MYSQL_DB = 'cjp-cli-dev';
