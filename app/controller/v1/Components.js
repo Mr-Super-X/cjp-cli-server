@@ -56,7 +56,7 @@ class ComponentsController extends Controller {
     // 1. 添加组件信息
     // 查询数据库中是否存在component
     const haveComponentInDB = await componentService.queryOne({
-      projectName: componentData.name,
+      name: componentData.name,
     });
     let componentId;
     // 如果组件数据不存在则插入一条数据
